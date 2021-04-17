@@ -1,0 +1,38 @@
+Sub DM_Zeit_Erstellen()
+'   Datum
+    Range("A1").Value = "Datum"
+    Range("A2").Value = "01.01.2019"
+    Range("A2").FormulaR1C1 = "1/1/2019"
+    Range("A2").Select
+    Selection.AutoFill Destination:=Range("A2:A732"), Type:=xlFillDefault
+    
+'   Jahr
+    Range("B1").Value = "Jahr"
+    Range("B2").Value = "=YEAR(RC[-1])"
+    Range("B2").Select
+    Selection.AutoFill Destination:=Range("B2:B732"), Type:=xlFillDefault
+    
+'   Monat
+    Range("C1").Value = "Monat"
+    Range("C2").Value = "=TEXT(RC[-2], ""MMMM"")"
+    Range("C2").Select
+    Selection.AutoFill Destination:=Range("C2:C732"), Type:=xlFillDefault
+    
+'   Monat mit Nummer
+    Range("D1").Value = "Monat mit Nummer"
+    Range("D2").Value = "=MONTH(RC[-3])"
+    Range("D2").Select
+    Selection.AutoFill Destination:=Range("D2:D732"), Type:=xlFillDefault
+    
+'   Tag
+    Range("E1").Value = "Tag"
+    Range("E2").Value = "=DAY(RC[-4])"
+    Range("E2").Select
+    Selection.AutoFill Destination:=Range("E2:E732"), Type:=xlFillDefault
+    
+'   Wochentag
+    Range("F1").Value = "Wochentag"
+    Range("F2").Value = "=WEEKDAY(RC[-5])"
+    Range("F2").Select
+    Selection.AutoFill Destination:=Range("F2:F732"), Type:=xlFillDefault
+End Sub
