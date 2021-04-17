@@ -1,0 +1,66 @@
+Option Base 1
+Option Explicit
+
+Sub Kundendatengenerierung()
+    Dim a, b, c, d As Integer
+    Dim Postleitzahl As String
+    Dim Vorname, Nachname, Segment, Postleitzahlen_Zahlen, Ort As Variant
+        
+    d = 0
+    'Postleitzahlen Array generieren
+    Postleitzahlen_Zahlen = Array("1", "2", "3", "4", "5", "6", "7", "8", "9")
+    
+    'Vornamen generieren
+    Vorname = Array("Jens", "Thomas", "Lisa")
+    
+    'Nachnamen generieren
+    Nachname = Array("Müller", "Nothaft", "Kohl", "Mayer", "Hertweg", "Froh", "Huber", "Schmidt", "Rohrer")
+    
+    'Kundensegmente festlegen
+    Segment = Array("Privatkunde", "Geschäftskunde")
+    
+    'Wohnorte generieren
+    Ort = Array("Esslingen", "Sindelfingen", "Pforzheim", "Stuttgart", "Ludwigsburg")
+    
+    Range("A1").Value = "KundenID"
+    'Kunden ID generieren
+    For a = 2 To 28
+        Range("A" & a).Value = a - 1
+    Next a
+    
+    Range("B1").Value = "Vorname"
+    Range("C1").Value = "Nachname"
+    
+    For b = 1 To 3
+        For c = 1 To 9
+            Range("B" & c + d + 1).Value = Vorname(b)
+            Range("C" & c + d + 1).Value = Nachname(c)
+        Next c
+        d = d + 9
+    Next b
+    
+    Range("D1").Value = "Segment"
+    'Kundensegment zufällig auswählen.
+    For a = 2 To 28
+        Randomize
+        Range("D" & a).Value = Segment(Int((2 * Rnd) + 1))
+    Next a
+    
+    Range("E1").Value = "Postleitzahl"
+    'Zufällige Postleitzahl generieren
+    For a = 2 To 28
+        Postleitzahl = vbNullString
+        For b = 1 To 5
+            Randomize
+            Postleitzahl = Postleitzahl & Postleitzahlen_Zahlen(Int((9 * Rnd) + 1))
+        Next b
+        Range("E" & a).Value = Postleitzahl
+    Next a
+    
+    Range("F1").Value = "Wohnort"
+    'Wohnort zufällig auswählen
+    For a = 2 To 28
+        Randomize
+        Range("F" & a).Value = Ort(Int((5 * Rnd) + 1))
+    Next a
+End Sub
