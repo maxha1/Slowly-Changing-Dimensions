@@ -1,0 +1,39 @@
+Option Base 1
+Option Explicit
+Sub Umsatzgenerierung()
+    Dim a As Integer
+    
+    Range("A1").Value = "Produkt ID"
+    'Produkt ID generieren
+    For a = 2 To 518
+        'Zufälligen Wert aus Produkt ID-Range wählen
+        Range("A" & a).Value = Int((12 * Rnd) + 1)
+    Next a
+    
+    Range("B1").Value = "KundenID"
+    'Kunden ID generieren
+    For a = 2 To 518
+        'Zufälligen Wert aus Kunden ID-Range wählen
+        Range("B" & a).Value = Int((27 * Rnd) + 1)
+    Next a
+    
+    Range("C1").Value = "PersonalID"
+    'Personal ID generieren
+    For a = 2 To 518
+        'Zufälligen Wert aus Personal ID-Range wählen
+        Range("C" & a).Value = Int((5 * Rnd) + 1)
+    Next a
+    
+    'Datum einfügen
+    Range("D1").Value = "Datum"
+    Range("D2").Value = "01.01.2019"
+    Range("D2").FormulaR1C1 = "1/1/2019"
+    Range("D2").Select
+    Selection.AutoFill Destination:=Range("D2:D518"), Type:=xlFillDefault
+    
+    Range("E1").Value = "Verkaufte_Anzahl"
+    For a = 2 To 518
+        'Zufällige Anzahl generieren
+        Range("E" & a).Value = Int((5 * Rnd) + 1)
+    Next a
+End Sub
