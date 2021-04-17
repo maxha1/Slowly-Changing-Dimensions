@@ -1,0 +1,35 @@
+Option Explicit
+Option Base 1
+
+Sub SCD3_Main()
+    Dim CSVDatenArray, TabellenArray, SplitArray As Variant
+    Dim AnzahlSemikolons, AnzahlSpalten, AnzahlReihen As Long
+    Dim Tabelle As ListObject
+    Dim a As Integer
+    
+    'Tabelleninhalt in Variable "Tabelle" einfügen
+    Set Tabelle = Worksheets("Personal").ListObjects("Personal")
+    'Anzahl Zeilen herausfinden
+    AnzahlReihen = Tabelle.Range.Rows.Count
+    'SCD3 Vorbereitung: Neue Spalte "Aktuelle Abteilung" - sofern noch nicht vorhanden - hinzufügen und Werte einfügen
+    If ActiveSheet.ListObjects("Personal").HeaderRowRange(6).Value <> "Aktuelle Abteilung" Then
+        Tabelle.ListColumns.Add(6).Name = "Aktuelle Abteilung"
+        'Vergleich Spalte "Abteilung" von CSV- und Excel-Tabelle
+        For a = 2 To AnzahlReihen
+            Tabelle.DataBodyRange(a - 1, 6).Value = Tabelle.DataBodyRange(a - 1, 5).Value
+        Next a
+    End If
+    'Personal CSV-Quelldatei in Array einlesen
+    CSV_Quelldatei_to_Array "\\ss002207\TABHAMA0$\Desktop\Neu\Study\Studium\Semester_5\Business_Intelligence\Business_Intelligence_Projektbericht\Business_Intelligence_Projektbericht_Neu\Testdatengenerierung\Personal.csv", CSVDatenArray, AnzahlSemikolons, AnzahlSpalten, AnzahlReihen
+    'Personal Excel-Tabelle in Array einlesen
+    Excel_Tabelle_to_Array "Personal", TabellenArray, Tabelle
+    
+    For a = 2 To UBound(TabellenArray, 1)
+        SplitArray = Split(CSVDatenArray(a, 1), ";")
+        'Abgleich "Aktuelle Abteilung" mit CSV-Datei "Abteilung"
+        If SplitArray(4) <> TabellenArray(a, 6) Then
+            Tabelle.DataBodyRange(a - 1, 5).Value = Tabelle.DataBodyRange(a - 1, 6).Value
+            Tabelle.DataBodyRange(a - 1, 6).Value = SplitArray(4)
+        End If
+    Next
+End Sub
