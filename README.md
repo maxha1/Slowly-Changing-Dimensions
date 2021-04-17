@@ -1,1 +1,1 @@
-# Slowly-Changing-Dimensions
+Im Rahmen eines Studienprojekts wurde ein prototypisches Data Warehouse erstellt, welches der Problemstellung sich ändernder Dimensionstabellen sowie deren Historisierung durch die Implementierung der Slowly Changing Dimensions Typen 2 und 3 begegnet. Diese werden mit VBA realisiert, wobei Excel mit seinen kostenfreien Add-Ins Power-Query und -Pivot verwendet wird, um den ETL-Prozess durchzuführen. Die Dimensionsquelldateien liegen in CSV-Form vor.
