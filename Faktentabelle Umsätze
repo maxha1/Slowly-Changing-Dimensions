@@ -1,0 +1,19 @@
+Option Base 1
+Option Explicit
+
+Sub CallGetSurrogateKey()
+    Dim Tabelle As ListObject
+
+    'Tabelleninhalt in Variable "Tabelle" einfügen
+    Set Tabelle = Worksheets("Umsätze").ListObjects("Umsätze")
+    'SurrogateKey-Spalten - sofern noch nicht vorhanden - hinzufügen
+    If Tabelle.Range(1, 1).Value <> "ProduktSurrogateKey" And Tabelle.Range(1, 3).Value <> "KundenSurrogateKey" Then
+        Tabelle.ListColumns.Add(1).Name = "ProduktSurrogateKey"
+        Tabelle.ListColumns.Add(3).Name = "KundenSurrogateKey"
+    End If
+    
+    'Extraktion der jeweiligen Produkt-SurrogateKeys mithilfe von Produkt ID in Kombination mit Umsatzdatum
+    GetSurrogateKey "ProduktSurrogateKey", "ProduktID", "Produkte"
+    'Extraktion der jeweiligen Kunden-SurrogateKeys mithilfe von Kunden ID in Kombination mit Umsatzdatum
+    GetSurrogateKey "KundenSurrogateKey", "KundenID", "Kunden"
+End Sub
