@@ -1,0 +1,191 @@
+Option Explicit
+Option Base 1
+
+Sub SCD2(TabellenArray, AnzahlSpaltenTabelle As Variant, Tabelle As ListObject)
+    Dim Zeile, Spalte, u, s As Integer
+    Dim EinzufügenderWert As String
+    Dim HeutigesDatum As Date
+    Dim newrow As ListRow
+    Dim ArrayElement, LängeDesStringelements, ZeilenArray As Variant
+    
+    HeutigesDatum = Date
+    u = 0
+    'Als geändert identifizierte Werte in Tabelle schreiben und Datum anpassen
+    For Each ArrayElement In TabellenArray
+        If InStr(ArrayElement, "NW") Then
+            'Genauen Aenderungswert und dessen Spaltenindex auslesen
+            ZeilenArray = Split(ArrayElement, "NW")
+            Zeile = ZeilenArray(0)
+            Spalte = Right(ArrayElement, 1)
+            LängeDesStringelements = Len(ArrayElement)
+            EinzufügenderWert = Mid(ArrayElement, Len(ZeilenArray(0)) + 3, LängeDesStringelements - (Len(ZeilenArray(0)) + 3))
+                        
+            '"Gueltig bis"-Datum anpassen auf heutigen Tag
+            Tabelle.DataBodyRange(Zeile - 1 + u, AnzahlSpaltenTabelle).Value = HeutigesDatum
+            'Angepassten Datensatz in neue Zeile darunter hinzufügen
+            
+            Set newrow = Tabelle.ListRows.Add(Zeile + u)
+            With newrow
+                For s = Tabelle.DataBodyRange(Zeile, AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 1)).Value To Tabelle.DataBodyRange.Rows.Count - 1
+                   Tabelle.DataBodyRange(s + 1, AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 1)).Value = s + 1
+                Next s
+                .Range(Spalte) = EinzufügenderWert
+                .Range(AnzahlSpaltenTabelle - 1) = Tabelle.DataBodyRange(Zeile - 1 + u, AnzahlSpaltenTabelle).Value + 1
+                .Range(AnzahlSpaltenTabelle) = "31.12.9999"
+                .Range(AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 2)) = Tabelle.DataBodyRange(Zeile - 1 + u, AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 2))
+                .Range(AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 3)) = Tabelle.DataBodyRange(Zeile - 1 + u, AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 3))
+                .Range(AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 4)) = Tabelle.DataBodyRange(Zeile - 1 + u, AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 4))
+                .Range(AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 7)) = Tabelle.DataBodyRange(Zeile - 1 + u, AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 7))
+                If Spalte = 5 Then
+                    .Range(AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 6)) = Tabelle.DataBodyRange(Zeile - 1 + u, AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 6))
+                ElseIf Spalte = 6 Then
+                    .Range(AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 5)) = Tabelle.DataBodyRange(Zeile - 1 + u, AnzahlSpaltenTabelle - (AnzahlSpaltenTabelle - 5))
+                End If
+            End With
+            u = u + 1
+        End If
+    Next ArrayElement
+End Sub
+
+Sub CSV_Quelldatei_to_Array(Pfad As String, CSVDatenArray As Variant, AnzahlSemikolons, AnzahlSpalten, AnzahlReihen As Long)
+    Dim CSVWorkbook As Workbook
+    
+    'Pfad der CSV Datei einlesen
+    Set CSVWorkbook = Workbooks.Open(Filename:=Pfad)
+    
+    'CSV Datei in Array schreiben
+    With CSVWorkbook
+        CSVDatenArray = .Sheets(1).UsedRange.Value
+        .Close
+    End With
+    
+    'Anzahl Spalten herausfinden
+    AnzahlSemikolons = Len(CSVDatenArray(1, 1)) - Len(Replace(CSVDatenArray(1, 1), ";", ""))
+    AnzahlSpalten = AnzahlSemikolons + 1
+    
+    'Anzahl Reihen herausfinden
+    AnzahlReihen = UBound(CSVDatenArray)
+End Sub
+
+Sub Excel_Tabelle_to_Array(Worksheet, TabellenArray As Variant, Tabelle As ListObject)
+    Dim AnzahlSpaltenTabelle, AnzahlReihenTabelle As Long
+    Dim i, y As Integer
+    
+    'Anzahl Spalten und Reihen für Deklaration der Array Grösse herausfinden
+    AnzahlSpaltenTabelle = Tabelle.Range.Columns.Count
+    AnzahlReihenTabelle = Tabelle.Range.Rows.Count
+    ReDim TabellenArray(AnzahlReihenTabelle, AnzahlSpaltenTabelle)
+    'Pro Spalte die Anzahl der Reihen mit Einträgen herausfinden
+    For y = 1 To AnzahlSpaltenTabelle
+        AnzahlReihenTabelle = WorksheetFunction.CountA(Worksheets(Worksheet).Columns(y))
+        
+        'Tabelleneinträge der einzelnen Zeilen in Array einfügen
+        For i = 1 To AnzahlReihenTabelle
+            TabellenArray(i, y) = Cells(i, y).Value
+        Next i
+    Next y
+End Sub
+
+Sub SCD2_Tabellenvorbereitung(SurrogateKeyIstWert, SurrogateKeySollWert, GueltigVon, GueltigBis As Variant, AnzahlSpaltenTabelle, AnzahlReihenTabelle As Variant, Tabelle As ListObject)
+    Dim h As Integer
+    
+    'Sofern benötigte SCD-Typ 2 Spalten noch nicht vorhanden, einfügen
+    If SurrogateKeyIstWert <> SurrogateKeySollWert And GueltigVon <> "gültig von" And GueltigBis <> "gültig bis" Then
+        Tabelle.ListColumns.Add(AnzahlSpaltenTabelle + 1).Name = "gültig von"
+        Tabelle.ListColumns.Add(AnzahlSpaltenTabelle + 2).Name = "gültig bis"
+        Tabelle.ListColumns.Add(1).Name = SurrogateKeySollWert
+        For h = 1 To AnzahlReihenTabelle - 1
+            Tabelle.DataBodyRange(h, 1).Value = h
+            Tabelle.DataBodyRange(h, AnzahlSpaltenTabelle + 2).Value = "01.01.2010"
+            Tabelle.DataBodyRange(h, AnzahlSpaltenTabelle + 3).Value = "31.12.9999"
+        Next h
+    End If
+End Sub
+
+Sub AnzahlAktualisierungen(TabellenArray, CSVDatenArray As Variant, AnzahlSpaltenTabelle, AnzahlReihen, AnzahlSpalten, Worksheet As Variant, Tabelle As ListObject)
+    Dim ProduktIDCheck, ProduktIDCheckZeile, ProduktIDZeile, ProduktIDZähler, LetzteReihe, x, w As Integer
+    Dim ProduktIDZelle As Range
+    Dim SplitArray() As String
+    
+    LetzteReihe = Cells(Rows.Count, 2).End(xlUp).Row
+
+    'Prüfen, ob bereits neue Zeilen im Rahmen der SCD 2 Methodik hinzugefügt wurden
+    If UBound(TabellenArray) = TabellenArray(UBound(TabellenArray), 2) + 1 Then
+        'CSV-Datenarray Elemente, welche durch ";" getrennt werden, für Vergleich mit Excel-Tabellen Array in einzelne Elemente zerlegen
+        For x = 1 To AnzahlReihen
+            SplitArray = Split(CSVDatenArray(x, 1), ";")
+            For w = 0 To AnzahlSpalten - 1
+            'CSV-Datenarray Elemente mit Table Array Elementen vergleichen
+            If SplitArray(w) <> TabellenArray(x, w + 2) Then
+                TabellenArray(x, w + 2) = x & "NW" & SplitArray(w) & w + 2
+            End If
+            Next w
+        Next x
+        
+        ' Erstmalige SCD Typ 2-Implementierung über Aufruf der Funktion SCD2
+        SCD2 TabellenArray, AnzahlSpaltenTabelle, Tabelle
+    Else
+        'CSV-Datenarray Elemente, welche durch ";" getrennt werden, für Vergleich mit Excel-Tabellen Array in einzelne Elemente zerlegen
+        For x = 1 To AnzahlReihen - 1
+            'Jeweils aktuellesten, mit CSV-Quelldatei zu vergleichenden ProduktID-Datensatz und dessen Zeile ermitteln
+            ProduktIDCheckZeile = ThisWorkbook.Sheets(Worksheet).Range("B1:B" & LetzteReihe).Find(What:=x, LookIn:=xlValues).Row
+            Debug.Print "Zeile: " & ProduktIDCheckZeile
+            For Each ProduktIDZelle In Range("B1:B" & LetzteReihe)
+                If ProduktIDZelle.Value = x Then
+                    ProduktIDZähler = ProduktIDZähler + 1
+                End If
+            Next
+            ProduktIDZeile = ProduktIDCheckZeile + (ProduktIDZähler - 1)
+            Debug.Print ProduktIDZeile
+            SplitArray = Split(CSVDatenArray(x + 1, 1), ";")
+            For w = 0 To AnzahlSpalten - 1
+            'CSV-Datenarray Elemente mit Table Array Elementen vergleichen
+            If SplitArray(w) <> TabellenArray(ProduktIDZeile, w + 2) Then
+                TabellenArray(ProduktIDZeile, w + 2) = ProduktIDZeile & "NW" & SplitArray(w) & w + 2
+            End If
+            Next w
+            ProduktIDZähler = 0
+        Next x
+        'N-malige Aktualisierung und SCD Typ 2-Implementierung über Aufruf der Funktion SCD2
+        SCD2 TabellenArray, AnzahlSpaltenTabelle, Tabelle
+    End If
+End Sub
+
+Sub GetSurrogateKey(SurrogateKeyName, IDSpaltenname, Worksheet As String)
+    Dim SurrogateKeySpalte, IDSpaltennummer, Datumsspalte, AnzahlSpalten, AnzahlReihen, AnzahlSpaltenTabelle, AnzahlReihenTabelle, y, i, x, z As Integer
+    Dim UmsatzTabelle As ListObject
+    Dim UmsatzTabellenArray(), UmsatzArrayElement As Variant
+    
+    Set UmsatzTabelle = ActiveSheet.ListObjects("Umsätze")
+    SurrogateKeySpalte = UmsatzTabelle.HeaderRowRange.Cells.Find(SurrogateKeyName).Column
+    IDSpaltennummer = UmsatzTabelle.HeaderRowRange.Cells.Find(IDSpaltenname).Column
+    Datumsspalte = UmsatzTabelle.HeaderRowRange.Cells.Find("Datum").Column
+    AnzahlSpalten = Workbooks("SCD_Modellierung.xlsm").Worksheets(Worksheet).UsedRange.Columns.Count
+    AnzahlReihen = Workbooks("SCD_Modellierung.xlsm").Worksheets(Worksheet).UsedRange.Rows.Count
+        
+    'Anzahl Spalten und Zeilen der Umsatz Tabelle für Deklaration der Array Grösse herausfinden
+    AnzahlSpaltenTabelle = UmsatzTabelle.Range.Columns.Count
+    AnzahlReihenTabelle = UmsatzTabelle.Range.Rows.Count
+    ReDim UmsatzTabellenArray(AnzahlReihenTabelle, AnzahlSpaltenTabelle)
+    
+    For y = 1 To AnzahlSpaltenTabelle
+        
+        'Tabelleneinträge der einzelnen Zeilen in Array einfügen
+        For i = 1 To AnzahlReihenTabelle
+            UmsatzTabellenArray(i, y) = Cells(i, y).Value
+        Next i
+    Next y
+    For x = 2 To AnzahlReihenTabelle
+        For z = 1 To AnzahlReihen
+            'Mit ProduktID die in Frage kommenden Datensätze aus Dimensionstabelle Produkte auslesen
+            If UmsatzTabellenArray(x, IDSpaltennummer) = Workbooks("SCD_Modellierung.xlsm").Worksheets(Worksheet).Range("B" & z) Then
+            'Prüfen, ob Datum aus Umsatztabelle zwischen SCD 2 Daten der einzelnen ProduktID's liegt
+                If CDate(UmsatzTabellenArray(x, Datumsspalte)) >= CDate(Workbooks("SCD_Modellierung.xlsm").Worksheets(Worksheet).Range("H" & z).Value) _
+                   And CDate(UmsatzTabellenArray(x, Datumsspalte)) <= CDate(Workbooks("SCD_Modellierung.xlsm").Worksheets(Worksheet).Range("I" & z).Value) Then
+                        'Zuweisung des eindeutigen SurrogateKeys der Dimensionstabelle zur Umsatztabelle
+                        Cells(x, SurrogateKeySpalte) = Workbooks("SCD_Modellierung.xlsm").Worksheets(Worksheet).Range("A" & z).Value
+                End If
+            End If
+        Next z
+    Next x
+End Sub
