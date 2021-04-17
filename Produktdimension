@@ -28,7 +28,7 @@ Sub SCD2_Main()
     AnzahlSpaltenTabelle = Tabelle.Range.Columns.Count
     AnzahlReihenTabelle = Tabelle.Range.Rows.Count
     'Personal CSV-Quelldatei in Array einlesen
-    CSV_Quelldatei_to_Array "\\ss002207\TABHAMA0$\Desktop\Neu\Study\Studium\Semester_5\Business_Intelligence\Business_Intelligence_Projektbericht\Business_Intelligence_Projektbericht_Neu\Testdatengenerierung\Produkte.csv", CSVDatenArray, AnzahlSemikolons, AnzahlSpalten, AnzahlReihen
+    CSV_Quelldatei_to_Array "Produkte.csv", CSVDatenArray, AnzahlSemikolons, AnzahlSpalten, AnzahlReihen
     'Personal Excel-Tabelle in Array einlesen
     Excel_Tabelle_to_Array Worksheet, TabellenArray, Tabelle
     
