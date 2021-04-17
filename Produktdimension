@@ -1,0 +1,37 @@
+Option Base 1
+Option Explicit
+Sub SCD2_Main()
+    Dim CSVDatenArray, TabellenArray As Variant
+    Dim Tabelle As ListObject
+    Dim Worksheet, ProduktSurrogateKeyIstWert, ProduktSurrogateKeySollWert, GueltigVon, GueltigBis, SplitArray() As String
+    Dim a, h As Integer
+    Dim AnzahlSpaltenTabelle, AnzahlReihenTabelle, AnzahlSemikolons, AnzahlSpalten, AnzahlReihen As Long
+    
+    
+    'Passenden Worksheet auswählen
+    Worksheet = "Produkte"
+    'Tabelleninhalt in Variable "Tabelle" einfügen
+    Set Tabelle = Worksheets(Worksheet).ListObjects(Worksheet)
+    'Anzahl Spalten und Reihen herausfinden
+    AnzahlSpaltenTabelle = Tabelle.Range.Columns.Count
+    AnzahlReihenTabelle = Tabelle.Range.Rows.Count
+    
+    'Table für SCD Typ 2 vorbereiten
+    ProduktSurrogateKeyIstWert = ActiveSheet.ListObjects("Produkte").HeaderRowRange(1).Value
+    ProduktSurrogateKeySollWert = "ProduktSurrogateKey"
+    GueltigVon = ActiveSheet.ListObjects("Produkte").HeaderRowRange(AnzahlSpaltenTabelle - 1).Value
+    GueltigBis = ActiveSheet.ListObjects("Produkte").HeaderRowRange(AnzahlSpaltenTabelle).Value
+    'Tabellenspalten gemäss SCD2-Methodik hinzufügen
+    SCD2_Tabellenvorbereitung ProduktSurrogateKeyIstWert, ProduktSurrogateKeySollWert, GueltigVon, GueltigBis, AnzahlSpaltenTabelle, AnzahlReihenTabelle, Tabelle
+    
+    'Aktualisierte Anzahl Spalten und Reihen herausfinden
+    AnzahlSpaltenTabelle = Tabelle.Range.Columns.Count
+    AnzahlReihenTabelle = Tabelle.Range.Rows.Count
+    'Personal CSV-Quelldatei in Array einlesen
+    CSV_Quelldatei_to_Array "\\ss002207\TABHAMA0$\Desktop\Neu\Study\Studium\Semester_5\Business_Intelligence\Business_Intelligence_Projektbericht\Business_Intelligence_Projektbericht_Neu\Testdatengenerierung\Produkte.csv", CSVDatenArray, AnzahlSemikolons, AnzahlSpalten, AnzahlReihen
+    'Personal Excel-Tabelle in Array einlesen
+    Excel_Tabelle_to_Array Worksheet, TabellenArray, Tabelle
+    
+    'Prüfung, der Anzahl der CSV-Aktualisierungen / -Aenderungen und Implementierung dieser gemäss SCD2-Methodik
+    AnzahlAktualisierungen TabellenArray, CSVDatenArray, AnzahlSpaltenTabelle, AnzahlReihen, AnzahlSpalten, Worksheet, Tabelle
+End Sub
